@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProducts, createProduct, removeProduct } from "./productsThunk";
+import { fetchProducts } from "./productsThunk";
 
 
 export interface Product {
@@ -46,14 +46,6 @@ const productsSlice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Fetch products failed";
-      })
-      .addCase(createProduct.fulfilled, (state, action) => {
-        state.items.push(action.payload);
-      })
-      .addCase(removeProduct.fulfilled, (state, action) => {
-        state.items = state.items.filter(
-          (p) => p.id !== action.payload
-        );
       });
   },
 });

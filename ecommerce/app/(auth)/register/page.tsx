@@ -39,7 +39,12 @@ export default function RegisterPage() {
     }
 
     const result = await dispatch(
-      registerThunk({ name: name.trim(), email, password })
+      registerThunk({
+        name: name.trim(),
+        email,
+        password,
+        confirmPassword,
+      })
     );
     if (registerThunk.fulfilled.match(result)) {
       const message = result.payload.message || "Đăng ký thành công";

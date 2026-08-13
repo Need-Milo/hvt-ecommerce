@@ -32,14 +32,24 @@ export const loginThunk = createAsyncThunk<
 );
 
 export const registerThunk = createAsyncThunk<
-  { user: any; token: string, message: string },
-  { name: string; email: string; password: string }
+  { user: any; token: string; message: string },
+  { name: string; email: string; password: string; confirmPassword?: string }
 >(
   "auth/register",
-  async ({ name, email, password }, { rejectWithValue }) => {
+  async ({ name, email, password, confirmPassword }, { rejectWithValue }) => {
     try {
-      const res = await registerApi({ name, email, password });
-    return { user: res.data.user , token: res.data.token, message: res.data.message };
+      const res = await registerApi({
+        fullName: name,
+        name,
+        email,
+        password,
+        confirmPassword,
+      });
+      return {
+        user: res.data.user,
+        token: res.data.token,
+        message: res.data.message,
+      };
     } catch (err: any) {
       return rejectWithValue(
         err.response?.data?.message || "Đăng ký thất bại"

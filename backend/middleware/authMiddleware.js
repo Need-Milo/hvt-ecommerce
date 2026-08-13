@@ -1,33 +1,28 @@
-import jwt from "jsonwebtoken";
-import { usersData } from "../data/user.js";
+import { UserModel } from "../models/UserModel.js";
+import { toPublicUser, verifyToken } from "../utils/auth.js";
 
-const JWT_SECRET = "MY_SECRET_KEY";
-
-export const authMiddleware = (req, res, next) => {
+export async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.split(" ")[1];
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
 
   if (!token) {
     return res.status(401).json({ message: "Chưa đăng nhập" });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = verifyToken(token);
+    const user = await UserModel.findById(decoded.id);
 
-    const user = usersData.find((u) => Number(u.id) === Number(decoded.id));
     if (!user) {
       return res.status(401).json({ message: "User không tồn tại" });
     }
 
-    req.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    };
-
+    req.user = toPublicUser(user);
+    req.userEntity = user;
     next();
   } catch {
     return res.status(401).json({ message: "Token không hợp lệ" });
   }
-};
+}

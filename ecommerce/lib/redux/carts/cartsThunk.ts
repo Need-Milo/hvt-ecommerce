@@ -1,20 +1,23 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getCartApi, addCartApi, removeCartApi, removeAllCartApi } from "../../api/cartsAPi";
+import {
+  getCartApi,
+  addCartApi,
+  removeCartApi,
+  removeAllCartApi,
+} from "../../api/cartsAPi";
 
-// 1. Fetch cart
 export const fetchCart = createAsyncThunk(
   "carts/fetch",
   async (userId: string | number, { rejectWithValue }) => {
     try {
-      const res = await getCartApi(userId);
-      return { userId, cart: res.data };
-    } catch (err: any) {
+      const res = await getCartApi();
+      return { userId, cart: res.data.items || [] };
+    } catch {
       return rejectWithValue("Fetch cart failed");
     }
   }
 );
 
-// 2. Add to cart
 export const addToCart = createAsyncThunk(
   "carts/add",
   async (
@@ -22,29 +25,43 @@ export const addToCart = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const res = await addCartApi(userId, item);
+      const res = await addCartApi({
+        productId: item.productId,
+        quantity: item.quantity || 1,
+      });
       return { userId, item: res.data };
     } catch (err: any) {
-      return rejectWithValue("Add to cart failed");
+      return rejectWithValue(
+        err.response?.data?.message || "Add to cart failed"
+      );
     }
   }
 );
 
-// 3. Remove from cart
 export const removeFromCart = createAsyncThunk(
   "carts/remove",
   async (
-    { userId, itemId }: { userId: string | number; itemId: number },
-    { rejectWithValue }
+    {
+      userId,
+      itemId,
+      quantity,
+    }: { userId: string | number; itemId: number; quantity?: number },
+    { rejectWithValue, getState }
   ) => {
     try {
-     const res = await removeCartApi(userId, itemId);
-      return res.data
-    } catch (err: any) {
+      const state: any = getState();
+      const current =
+        quantity ??
+        state.carts.items.find((i: any) => i.id === itemId)?.quantity ??
+        1;
+      const res = await removeCartApi(itemId, current);
+      return res.data;
+    } catch {
       return rejectWithValue("Remove cart failed");
     }
   }
 );
+
 export const removeAllFromCart = createAsyncThunk(
   "carts/removeAll",
   async (
@@ -52,9 +69,9 @@ export const removeAllFromCart = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      await removeAllCartApi(userId, itemId);
+      await removeAllCartApi(itemId);
       return { itemId };
-    } catch (err: any) {
+    } catch {
       return rejectWithValue("Remove all failed");
     }
   }
