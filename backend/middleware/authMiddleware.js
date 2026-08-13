@@ -14,7 +14,7 @@ export const authMiddleware = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = usersData.find((u) => u.id === decoded.id);
+    const user = usersData.find((u) => Number(u.id) === Number(decoded.id));
     if (!user) {
       return res.status(401).json({ message: "User không tồn tại" });
     }

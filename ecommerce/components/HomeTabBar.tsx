@@ -34,7 +34,7 @@ const HomeTabBar = ({ selectedTab, onTabSelect }: Props) => {
         href="/shop"
         className="border border-shop-light-green/30 px-4 py-1.5 md:px-6 md:py-2 rounded-full hover:bg-shop-light-green hover:border-shop-light-green hover:text-white hoverEffect"
       >
-        See all
+        Xem tất cả
       </Link>
     </div>
   )

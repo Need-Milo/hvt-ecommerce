@@ -1,39 +1,26 @@
+"use client";
 
-import React from 'react';
-import Container from './Container';
-import { Logo } from './Logo';
-import { HeaderMenu } from './HeaderMenu';
-import { SearchBar } from './SearchBar';
-import CartIcon from './CartIcon';
-import FavoriteButton from './FavoriteButton';
-import MobileMenu from './MobileMenu';
-import { useAppSelector } from '@/lib/redux/hooks';
-import LogoutClient from './LogoutClient';
-import SignInClient from './SignInClient';
-import { LogInIcon } from 'lucide-react';
-import Link from 'next/link';
-import LogInClient from './LogInClient';
+import Container from "./Container";
+import { Logo } from "./Logo";
+import { HeaderMenu } from "./HeaderMenu";
+import { SearchBar } from "./SearchBar";
+import CartIcon from "./CartIcon";
+import MobileMenu from "./MobileMenu";
+import AuthNav from "./AuthNav";
 
-const Header = async () => {
-
-
+const Header = () => {
   return (
-    <header className="bg-white/70 py-5 sticky top-0 z-50 backdrop-blur-md ">
-      
-      <Container className="flex items-center justify-between">
+    <header className="bg-white/80 py-4 sticky top-0 z-50 backdrop-blur-md border-b border-darkColor/5">
+      <Container className="flex items-center justify-between gap-3">
         <MobileMenu />
-        <div className="w-auto md:w-1/3 flex items-center gap-2.5 justify-start text-lightColor md:gap-0">
+        <div className="flex items-center">
           <Logo />
         </div>
-
         <HeaderMenu />
-
-        <div className="w-auto md:w-1/3 flex items-center justify-end gap-5">
+        <div className="flex items-center justify-end gap-4 md:gap-5 ml-auto">
           <SearchBar />
           <CartIcon />
-          <FavoriteButton />
-           <SignInClient/>
-           <LogInClient/>
+          <AuthNav />
         </div>
       </Container>
     </header>

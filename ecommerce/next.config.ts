@@ -4,11 +4,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol:"http",
+        protocol: "http",
         hostname: "localhost",
-        port: "5000"
-      }
-    ]
+        port: "5000",
+      },
+      {
+        protocol: "https",
+        hostname: "ecommerce-hvt.onrender.com",
+      },
+    ],
   }
 };
 

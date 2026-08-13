@@ -5,12 +5,14 @@ interface CartState {
   items: any[];
   loading: boolean;
   error: string | null;
+  hydrated: boolean;
 }
 
 const initialState: CartState = {
   items: [],
   loading: false,
   error: null,
+  hydrated: false,
 };
 
 const cartSlice = createSlice({
@@ -18,9 +20,10 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     clearCart: (state) => {
-      state.items = [],
-      state.loading = false,
+      state.items = []
+      state.loading = false
       state.error = null
+      state.hydrated = false
     }
   },
   extraReducers: (builder) => {
@@ -30,10 +33,12 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
+        state.hydrated = true;
         state.items = action.payload.cart;
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
+        state.hydrated = true;
         state.error = action.payload as string;
       })
 

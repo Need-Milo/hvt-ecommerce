@@ -2,74 +2,124 @@
 
 import "../../globals.css";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { loginThunk, logoutThunk } from "@/lib/redux/auth/authThunk";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { loginThunk } from "@/lib/redux/auth/authThunk";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { clearCart } from "@/lib/redux/carts/cartsSlice";
 import { fetchCart } from "@/lib/redux/carts/cartsThunk";
+import { getSafeRedirect } from "@/lib/auth";
+import { Logo } from "@/components/Logo";
 
-export default function LoginPage() {
+function LoginForm() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { loading, error, token, user } = useAppSelector((state) => state.auth);
-
+  const searchParams = useSearchParams();
+  const { loading, error, user } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const redirectTo = getSafeRedirect(searchParams.get("redirect"));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     dispatch(loginThunk({ email, password }));
   };
 
- useEffect(() => {
-  if (user) {
-    const userId = user.id || user._id
-    dispatch(clearCart())
-    dispatch(fetchCart(userId))
-    router.push("/")
-  }
-}, [user, router,dispatch]);
-
+  useEffect(() => {
+    if (user) {
+      const userId = user.id || user._id;
+      dispatch(clearCart());
+      dispatch(fetchCart(userId));
+      router.push(redirectTo);
+    }
+  }, [user, router, dispatch, redirectTo]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-400 ">
-      <form
-        onSubmit={handleSubmit}
-        className="w-80 p-6 bg-white shadow rounded flex flex-col gap-3"
-      >
-        <h1 className="text-lg font-semibold text-center">Login</h1>
+    <div className="flex min-h-screen">
+      <div className="hidden md:flex w-1/2 bg-shop-dark-green text-white flex-col justify-center px-16">
+        <p className="text-sm uppercase tracking-[0.3em] text-white/70">
+          Shopcart
+        </p>
+        <h1 className="text-4xl font-black mt-4 leading-tight">
+          Mua sắm dễ dàng,
+          <br />
+          giao hàng tận nơi.
+        </h1>
+        <p className="mt-4 text-white/80 max-w-md">
+          Đăng nhập để quản lý giỏ hàng, theo dõi đơn hàng và hoàn tất thanh
+          toán.
+        </p>
+      </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="border px-3 py-2 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="border px-3 py-2 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white py-2 rounded disabled:opacity-50"
+      <div className="w-full md:w-1/2 flex items-center justify-center bg-shop-light-bg px-4 py-10">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-md p-8 bg-white shadow-lg rounded-2xl flex flex-col gap-4"
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-        <Link href="/register" > Đăng ký</Link>
-      </form>
-      
+          <div className="text-center space-y-2">
+            <Logo />
+            <h1 className="text-xl font-bold">Đăng nhập</h1>
+            <p className="text-sm text-gray-500">
+              Nhập email và mật khẩu để tiếp tục
+            </p>
+          </div>
+
+          <label className="text-sm font-medium">
+            Email
+            <input
+              type="email"
+              placeholder="you@email.com"
+              className="mt-1 w-full border px-3 py-2.5 rounded-md outline-none focus:border-shop-dark-green"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+
+          <label className="text-sm font-medium">
+            Mật khẩu
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="mt-1 w-full border px-3 py-2.5 rounded-md outline-none focus:border-shop-dark-green"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-shop-dark-green text-white py-2.5 rounded-md font-semibold disabled:opacity-50 hover:bg-shop-light-green hoverEffect"
+          >
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+          </button>
+
+          <p className="text-sm text-center text-gray-600">
+            Chưa có tài khoản?{" "}
+            <Link href="/register" className="text-shop-dark-green font-semibold">
+              Đăng ký
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Đang tải...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

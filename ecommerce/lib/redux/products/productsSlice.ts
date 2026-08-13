@@ -12,6 +12,8 @@ export interface Product {
   status: string;
   stock: number;
   description: string;
+  featured?: boolean;
+  specifications?: Record<string, string>;
 }
 
 interface ProductsState {

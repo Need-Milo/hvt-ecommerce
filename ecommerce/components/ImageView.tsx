@@ -41,7 +41,7 @@ const ImageView = ({ images, isStock }: Props) => {
 
         {!isStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">
-            Out of Stock
+            Hết hàng
           </div>
         )}
       </div>

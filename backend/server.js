@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename)
 
 app.use(cookieParser())
 app.use(cors({
-  origin: "https://ecommerce-hvt.vercel.app",
+  origin: true,
   credentials: true
 }));
 app.use("/images", 

@@ -1,28 +1,37 @@
-"use client"
-import { getMeThunk } from '@/lib/redux/auth/authThunk'
-import { clearCart } from '@/lib/redux/carts/cartsSlice'
-import { fetchCart } from '@/lib/redux/carts/cartsThunk'
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import React, { useEffect } from 'react'
+"use client";
+
+import { getMeThunk } from "@/lib/redux/auth/authThunk";
+import { markAuthChecked } from "@/lib/redux/auth/authSlice";
+import { clearCart } from "@/lib/redux/carts/cartsSlice";
+import { fetchCart } from "@/lib/redux/carts/cartsThunk";
+import { fetchProducts } from "@/lib/redux/products/productsThunk";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useEffect } from "react";
 
 const AuthBootsTrap = () => {
-    const dispatch = useAppDispatch()
-    const user = useAppSelector(state => state.auth.user)
-    useEffect(() => {
-         const token = localStorage.getItem("token")
-         if(token){
-            dispatch(getMeThunk())
-         }      
-    } ,[dispatch])
-    useEffect(() => {
-        if(user?.id || user?._id ){
-            dispatch(fetchCart(user.id || user._id ))
-        }else{
-            dispatch(clearCart())
-        }
-    },[dispatch, user] )
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
 
-  return null
-}
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(getMeThunk());
+    } else {
+      dispatch(markAuthChecked());
+    }
+    dispatch(fetchProducts());
+  }, [dispatch]);
 
-export default AuthBootsTrap
+  useEffect(() => {
+    const userId = user?.id || user?._id;
+    if (userId) {
+      dispatch(fetchCart(userId));
+    } else {
+      dispatch(clearCart());
+    }
+  }, [dispatch, user]);
+
+  return null;
+};
+
+export default AuthBootsTrap;

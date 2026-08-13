@@ -25,7 +25,7 @@ export const loginThunk = createAsyncThunk<
        token: res.data.token};
     } catch (err: any) {
       return rejectWithValue(
-        err.response?.data?.message || "Login failed"
+        err.response?.data?.message || "Sai email hoặc mật khẩu"
       );
     }
   }
@@ -39,11 +39,10 @@ export const registerThunk = createAsyncThunk<
   async ({ name, email, password }, { rejectWithValue }) => {
     try {
       const res = await registerApi({ name, email, password });
-        setToken(res.data.token)  
     return { user: res.data.user , token: res.data.token, message: res.data.message };
     } catch (err: any) {
       return rejectWithValue(
-        err.response?.data?.message || "Register failed"
+        err.response?.data?.message || "Đăng ký thất bại"
       );
     }
   }
@@ -56,7 +55,11 @@ export const getMeThunk = createAsyncThunk<{
   async (_, { rejectWithValue }) => {
     try {
       const res = await getMeApi();
-      return { user: res.data.user, token: res.data.token };
+      const token = localStorage.getItem("token");
+      if (token) {
+        document.cookie = `token=${token}; path=/; max-age=${60 * 60}; SameSite=Lax`;
+      }
+      return { user: res.data.user, token: token || res.data.token };
     } catch (err) {
        removeToken();
       return rejectWithValue(null);

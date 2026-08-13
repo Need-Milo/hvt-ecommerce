@@ -3,19 +3,21 @@
 import { StarIcon } from "lucide-react";
 import Image from "next/image";
 import ImageView from "../../../../components/ImageView";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import ConTainer from "../../../../components/Container";
 import { useAppDispatch, useAppSelector } from "../../../../lib/redux/hooks";
 import { fetchProducts } from "@/lib/redux/products/productsThunk";
 import { AddToCartButton } from "../../../../components/AddToCartButton";
-import FavoriteButton from "../../../../components/FavoriteButton";
 import Link from "next/link";
+import PriceFormatter from "@/components/PriceFormatter";
+import { Minus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ProductDetail() {
   const params = useParams();
   const id = Number(params?.id);
-
+  const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
   const { items, loading } = useAppSelector((state) => state.products);
 
@@ -30,17 +32,23 @@ export default function ProductDetail() {
   if (loading || !product) {
     return (
       <ConTainer className="py-20 text-center">
-        <p className="text-gray-500">Loading product...</p>
+        <p className="text-gray-500">Đang tải sản phẩm...</p>
       </ConTainer>
     );
   }
 
   const isStock = product.stock > 0;
-
-  // 🔥 Lọc sản phẩm cùng type
   const relatedProducts = items.filter(
-    (p) => p.type === product.type && p.id !== product.id
+    (p) =>
+      (p.category === product.category || p.type === product.type) &&
+      p.id !== product.id
   );
+  const specs = product.specifications || {
+    "Danh mục": product.type,
+    "Mã sản phẩm": String(product.id),
+    "Tình trạng": isStock ? "Còn hàng" : "Hết hàng",
+    "Bảo hành": "12 tháng",
+  };
 
   return (
     <>
@@ -66,12 +74,14 @@ export default function ProductDetail() {
                 fill="#3b9c3c"
               />
             ))}
-            <p className="font-semibold">(120)</p>
+            <p className="font-semibold">(120 đánh giá)</p>
           </div>
 
           <div className="space-y-3 border-y border-gray-200 py-5">
-            <p className="text-2xl font-bold">${product.price}</p>
-
+            <PriceFormatter
+              amount={product.price}
+              className="text-2xl font-bold"
+            />
             <span
               className={`px-4 py-1.5 text-sm font-semibold rounded-lg inline-block ${
                 isStock
@@ -79,28 +89,70 @@ export default function ProductDetail() {
                   : "bg-red-100 text-red-600"
               }`}
             >
-              {isStock ? "In Stock" : "Out of Stock"}
+              {isStock ? "Còn hàng" : "Hết hàng"}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-full">
-              <AddToCartButton product={product} />
+          {isStock && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">Số lượng</span>
+              <div className="flex items-center border rounded-md">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                >
+                  <Minus className="w-4 h-4" />
+                </Button>
+                <span className="w-8 text-center font-semibold">{quantity}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() =>
+                    setQuantity((q) => Math.min(product.stock, q + 1))
+                  }
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            <FavoriteButton showProduct={true} product={product} />
+          )}
+
+          <AddToCartButton
+            product={product}
+            quantity={quantity}
+            forceButton
+            className="rounded-md h-11"
+          />
+
+          <div className="border rounded-lg overflow-hidden">
+            <h3 className="font-semibold px-4 py-3 bg-gray-50 border-b">
+              Thông số kỹ thuật
+            </h3>
+            <dl>
+              {Object.entries(specs).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="flex justify-between gap-4 px-4 py-2.5 text-sm border-b last:border-b-0"
+                >
+                  <dt className="text-gray-500">{key}</dt>
+                  <dd className="font-medium text-right capitalize">{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       </ConTainer>
 
       {relatedProducts.length > 0 && (
-        
         <ConTainer className="pb-16">
-          <h3 className="text-xl font-bold mb-6">
-            Related Products
-          </h3>
-
+          <h3 className="text-xl font-bold mb-6">Sản phẩm liên quan</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {relatedProducts.slice(0,6).map((item) => (
+            {relatedProducts.slice(0, 4).map((item) => (
               <Link
                 key={item.id}
                 href={`/products/${item.id}`}
@@ -114,7 +166,6 @@ export default function ProductDetail() {
                     unoptimized
                     className="object-contain group-hover:opacity-0 transition duration-300"
                   />
-
                   {item.image[1] && (
                     <Image
                       src={item.image[1]}
@@ -125,14 +176,9 @@ export default function ProductDetail() {
                     />
                   )}
                 </div>
-
                 <div className="mt-3 space-y-1">
-                  <p className="font-semibold text-sm truncate">
-                    {item.name}
-                  </p>
-                  <p className="text-shop-dark-green font-bold">
-                    ${item.price}
-                  </p>
+                  <p className="font-semibold text-sm truncate">{item.name}</p>
+                  <p className="text-shop-dark-green font-bold">${item.price}</p>
                 </div>
               </Link>
             ))}

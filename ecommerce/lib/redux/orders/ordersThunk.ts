@@ -4,11 +4,14 @@ import { createOrderApi, fetchOrderApi } from "../../api/ordersApi"
 export const createOrder = createAsyncThunk(
   "orders/create",
   async (
-    { userId, address, phone, nameUser }: { userId: string; address: string, phone: string, nameUser: string },
+    { userId, address, phone, nameUser }: { userId: string | number; address: string, phone: string, nameUser: string },
     { rejectWithValue }
   ) => {
     try {
       const res = await createOrderApi(userId, address, phone, nameUser )
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("lastOrder", JSON.stringify(res.data))
+      }
       return res.data
     } catch (err: any) {
       return rejectWithValue("Order failed")
@@ -17,7 +20,7 @@ export const createOrder = createAsyncThunk(
 )
 export const fetchOrders = createAsyncThunk(
   "orders/fetchAll",
-  async(userId: string, {rejectWithValue}) => {
+  async(userId: string | number, {rejectWithValue}) => {
     try{
       const res = await fetchOrderApi(userId)
       return res.data

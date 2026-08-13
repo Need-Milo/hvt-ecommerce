@@ -1,6 +1,5 @@
 import { Poppins } from "next/font/google";
 import Providers from "./providers";
-import Footer from "@/components/Footer";
 import { Metadata } from "next";
 import "./globals.css";
 import AuthBootsTrap from "@/components/AuthBootsTrap";
@@ -9,16 +8,16 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - ShopCart",
-    default: "ShopCart",
+    template: "%s - Shopcart",
+    default: "Shopcart",
   },
-  description: "ShopCart online store, Your one stop shop for all your needs",
+  description: "Website thương mại điện tử Shopcart — duyệt sản phẩm, giỏ hàng và thanh toán.",
 };
 
 const poppins = Poppins({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-poppins",
-  weight: ["300"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -29,9 +28,9 @@ export default function RootLayout({
 })
  {
   return (
-    <html lang="en">
+    <html lang="vi">
   <body
-    className={`antialiased ${poppins.variable}`}
+    className={`${poppins.variable} ${poppins.className} antialiased`}
     suppressHydrationWarning
   >
     <Providers>

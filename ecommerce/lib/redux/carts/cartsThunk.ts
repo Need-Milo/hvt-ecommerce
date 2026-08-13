@@ -4,7 +4,7 @@ import { getCartApi, addCartApi, removeCartApi, removeAllCartApi } from "../../a
 // 1. Fetch cart
 export const fetchCart = createAsyncThunk(
   "carts/fetch",
-  async (userId: string, { rejectWithValue }) => {
+  async (userId: string | number, { rejectWithValue }) => {
     try {
       const res = await getCartApi(userId);
       return { userId, cart: res.data };
@@ -18,7 +18,7 @@ export const fetchCart = createAsyncThunk(
 export const addToCart = createAsyncThunk(
   "carts/add",
   async (
-    { userId, item }: { userId: string; item: any },
+    { userId, item }: { userId: string | number; item: any },
     { rejectWithValue }
   ) => {
     try {
@@ -34,7 +34,7 @@ export const addToCart = createAsyncThunk(
 export const removeFromCart = createAsyncThunk(
   "carts/remove",
   async (
-    { userId, itemId }: { userId: string; itemId: number },
+    { userId, itemId }: { userId: string | number; itemId: number },
     { rejectWithValue }
   ) => {
     try {
@@ -48,7 +48,7 @@ export const removeFromCart = createAsyncThunk(
 export const removeAllFromCart = createAsyncThunk(
   "carts/removeAll",
   async (
-    { userId, itemId }: { userId: string; itemId: number },
+    { userId, itemId }: { userId: string | number; itemId: number },
     { rejectWithValue }
   ) => {
     try {
