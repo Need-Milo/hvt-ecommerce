@@ -48,7 +48,7 @@ async function createDatabase() {
 
 createDatabase()
   .then(() => {
-    console.log("Done. Next: npm run prisma:generate && npm run prisma:seed");
+    console.log("Done. Next: npm run db:seed");
     process.exit(0);
   })
   .catch((error) => {

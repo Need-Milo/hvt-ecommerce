@@ -1,33 +1,25 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import mysql from "mysql2/promise";
 
-const globalForPrisma = globalThis;
+const databaseUrl = new URL(process.env.DATABASE_URL);
 
-const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+export const pool = mysql.createPool({
+  host: databaseUrl.hostname,
+  port: Number(databaseUrl.port || 3306),
+  user: decodeURIComponent(databaseUrl.username),
+  password: decodeURIComponent(databaseUrl.password),
+  database: databaseUrl.pathname.slice(1),
+  waitForConnections: true,
+  connectionLimit: 10,
+});
 
 export async function connectDB() {
-  try {
-    await prisma.$connect();
-    await prisma.$queryRaw`SELECT 1`;
-    console.log("MySQL connected successfully");
-    return true;
-  } catch (error) {
-    console.error("MySQL connection failed:", error.message);
-    throw error;
-  }
+  const connection = await pool.getConnection();
+  await connection.ping();
+  connection.release();
+  console.log("MySQL connected successfully");
 }
 
 export async function disconnectDB() {
-  await prisma.$disconnect();
+  await pool.end();
 }
-
-export { prisma };
-export default prisma;

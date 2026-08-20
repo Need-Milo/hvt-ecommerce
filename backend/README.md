@@ -1,77 +1,27 @@
-# Ecommerce Backend — MVC + MySQL
+# Ecommerce-HVT Backend — MySQL SQL trực tiếp
 
-## Cấu trúc
+Backend Express theo MVC, dùng `mysql2/promise` và câu SQL trực tiếp; không dùng ORM.
 
-```text
-backend/
-├── config/
-│   └── db.js                 # Connect MySQL (Prisma Client)
-├── database/
-│   ├── schema.sql            # SQL tạo DB + tables
-│   └── createDatabase.js     # Script chạy schema.sql
-├── models/                   # Model (truy vấn DB)
-├── controllers/              # Controller (xử lý request)
-├── routes/                   # Route (map URL → controller)
-├── middleware/
-├── utils/
-├── prisma/
-│   ├── schema.prisma         # Prisma schema (ORM)
-│   └── seed.js
-└── server.js                 # Entry point
-```
-
-## Luồng MVC
-
-```text
-Request → routes → controllers → models → MySQL
-                         ↓
-                     Response
-```
-
-## Setup
-
-1. Chạy MySQL:
-
-```bash
-npm run db:up
-```
-
-2. Tạo database + tables:
+## Chuẩn bị database
 
 ```bash
 npm run db:create
+npm run db:seed
+npm run dev
 ```
 
-3. Generate Prisma client + seed:
-
-```bash
-npm run prisma:generate
-npm run prisma:seed
-```
-
-Hoặc một lệnh:
+Hoặc dùng một lệnh:
 
 ```bash
 npm run db:setup
 ```
 
-4. Chạy server:
-
-```bash
-npm run dev
-```
-
-Server sẽ gọi `connectDB()` khi start.
-
-## `.env`
+## Cấu hình `.env`
 
 ```env
-DATABASE_URL="mysql://root:root@localhost:3306/ecommerce"
+DATABASE_URL="mysql://root:root@localhost:3306/ecommerce_hvt"
 JWT_SECRET="change-me-in-production"
 PORT=5000
 ```
 
-## Tài khoản seed
-
-- `admin@shop.com` / `admin123`
-- `user@shop.com` / `user123`
+Schema MySQL nằm ở `database/schema.sql`; dữ liệu mẫu SQL nằm ở `database/seed.js`.

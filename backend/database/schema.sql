@@ -1,9 +1,9 @@
--- Tạo database ecommerce (MySQL 8)
-CREATE DATABASE IF NOT EXISTS ecommerce
+-- Tạo database ecommerce_hvt (MySQL 8)
+CREATE DATABASE IF NOT EXISTS ecommerce_hvt
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE ecommerce;
+USE ecommerce_hvt;
 
 -- users
 CREATE TABLE IF NOT EXISTS users (
@@ -61,6 +61,22 @@ CREATE TABLE IF NOT EXISTS product_images (
   PRIMARY KEY (id),
   KEY product_images_product_id_idx (product_id),
   CONSTRAINT product_images_product_id_fkey
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- product specifications (mỗi sản phẩm có nhiều thông số)
+CREATE TABLE IF NOT EXISTS product_specifications (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  product_id BIGINT NOT NULL,
+  specification_name VARCHAR(120) NOT NULL,
+  specification_value VARCHAR(500) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  UNIQUE KEY product_specifications_product_name_key (product_id, specification_name),
+  KEY product_specifications_product_id_idx (product_id),
+  CONSTRAINT product_specifications_product_id_fkey
     FOREIGN KEY (product_id) REFERENCES products(id)
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
