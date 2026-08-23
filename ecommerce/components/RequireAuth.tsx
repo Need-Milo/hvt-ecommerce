@@ -15,6 +15,7 @@ const RequireAuth = ({ children, requireCart = false }: Props) => {
   const cartItems = useAppSelector((state) => state.carts.items);
   const cartLoading = useAppSelector((state) => state.carts.loading);
   const cartHydrated = useAppSelector((state) => state.carts.hydrated);
+  const cartError = useAppSelector((state) => state.carts.error);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -26,11 +27,21 @@ const RequireAuth = ({ children, requireCart = false }: Props) => {
   }, [authChecked, user, pathname, router]);
 
   useEffect(() => {
-    if (!requireCart || !authChecked || !user || cartLoading || !cartHydrated) return;
+    if (!requireCart || !authChecked || !user || cartLoading || !cartHydrated) {
+      return;
+    }
     if (cartItems.length === 0) {
       router.replace("/cart");
     }
-  }, [requireCart, authChecked, user, cartLoading, cartHydrated, cartItems.length, router]);
+  }, [
+    requireCart,
+    authChecked,
+    user,
+    cartLoading,
+    cartHydrated,
+    cartItems.length,
+    router,
+  ]);
 
   if (!authChecked || !user) {
     return (
@@ -38,15 +49,27 @@ const RequireAuth = ({ children, requireCart = false }: Props) => {
     );
   }
 
+  if (requireCart && cartError && !cartHydrated) {
+    return (
+      <div className="py-24 text-center text-red-500">
+        Không tải được giỏ hàng. Kiểm tra backend đang chạy rồi F5 lại.
+      </div>
+    );
+  }
+
   if (requireCart && (cartLoading || !cartHydrated)) {
     return (
-      <div className="py-24 text-center text-gray-500">Đang tải giỏ hàng...</div>
+      <div className="py-24 text-center text-gray-500">
+        Đang tải giỏ hàng...
+      </div>
     );
   }
 
   if (requireCart && cartItems.length === 0) {
     return (
-      <div className="py-24 text-center text-gray-500">Giỏ hàng đang trống...</div>
+      <div className="py-24 text-center text-gray-500">
+        Giỏ hàng đang trống...
+      </div>
     );
   }
 

@@ -20,11 +20,11 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     clearCart: (state) => {
-      state.items = []
-      state.loading = false
-      state.error = null
-      state.hydrated = false
-    }
+      state.items = [];
+      state.loading = false;
+      state.error = null;
+      state.hydrated = true;
+    },
   },
   extraReducers: (builder) => {
     builder

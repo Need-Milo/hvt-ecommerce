@@ -6,8 +6,15 @@ export function mapProduct(product) {
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((img) => img.imageUrl);
 
-  const categoryName = product.category?.name || null;
-  const categorySlug = product.category?.slug || null;
+  const specsFromRelation = {};
+  for (const row of product.productSpecifications || []) {
+    specsFromRelation[row.specificationName] = row.specificationValue;
+  }
+
+  const specifications =
+    Object.keys(specsFromRelation).length > 0
+      ? specsFromRelation
+      : product.specifications || {};
 
   return {
     id: Number(product.id),
@@ -17,12 +24,12 @@ export function mapProduct(product) {
     description: product.description,
     stock: product.stockQuantity,
     stockQuantity: product.stockQuantity,
-    specifications: product.specifications || {},
+    specifications,
     isFeatured: product.isFeatured,
     featured: product.isFeatured,
-    category: categoryName,
+    category: product.category?.name || null,
     categoryId: product.categoryId ? Number(product.categoryId) : null,
-    type: categorySlug,
+    type: product.category?.slug || null,
     status: product.isFeatured ? "hot" : "new",
     image: images,
     images,

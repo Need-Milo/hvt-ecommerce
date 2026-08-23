@@ -6,8 +6,14 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "db:create": "node database/createDatabase.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
     "db:seed": "node database/seed.js",
-    "db:setup": "npm run db:create && npm run db:seed"
+    "db:setup": "npm run db:create && npm run prisma:generate && npm run prisma:push && npm run db:seed"
+  },
+  "prisma": {
+    "seed": "node database/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +21,7 @@
   "description": "",
   "type": "module",
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -24,5 +31,7 @@
     "mysql2": "^3.23.3",
     "nodemon": "^3.1.11"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
 }

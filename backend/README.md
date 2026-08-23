@@ -1,22 +1,28 @@
-# Ecommerce-HVT Backend — MySQL SQL trực tiếp
+# Ecommerce-HVT Backend — Express MVC + Prisma + MySQL
 
-Backend Express theo MVC, dùng `mysql2/promise` và câu SQL trực tiếp; không dùng ORM.
+## Stack
 
-## Chuẩn bị database
+- Express (MVC: routes → controllers → models)
+- **Prisma ORM** (`prisma/schema.prisma`)
+- MySQL
+
+## Setup
 
 ```bash
-npm run db:create
+npm install
+npx prisma generate
+npx prisma db push
 npm run db:seed
 npm run dev
 ```
 
-Hoặc dùng một lệnh:
+Hoặc:
 
 ```bash
 npm run db:setup
 ```
 
-## Cấu hình `.env`
+## `.env`
 
 ```env
 DATABASE_URL="mysql://root:root@localhost:3306/ecommerce_hvt"
@@ -24,4 +30,20 @@ JWT_SECRET="change-me-in-production"
 PORT=5000
 ```
 
-Schema MySQL nằm ở `database/schema.sql`; dữ liệu mẫu SQL nằm ở `database/seed.js`.
+## Xem DB bằng Prisma Studio
+
+```bash
+npx prisma studio
+```
+
+Mở UI tại `http://localhost:5555` — xem/sửa bảng trực quan, dễ hơn Workbench cho demo.
+
+## Cấu trúc
+
+```text
+config/db.js          # PrismaClient + connectDB
+prisma/schema.prisma  # Models ORM
+models/               # Dùng prisma.* thay vì SQL thuần
+controllers/
+routes/
+```

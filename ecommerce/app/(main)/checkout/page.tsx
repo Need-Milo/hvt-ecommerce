@@ -4,7 +4,6 @@ import PriceFormatter from "@/components/PriceFormatter";
 import RequireAuth from "@/components/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { clearCart } from "@/lib/redux/carts/cartsSlice";
-import { fetchCart } from "@/lib/redux/carts/cartsThunk";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createOrder } from "@/lib/redux/orders/ordersThunk";
 import { fetchProducts } from "@/lib/redux/products/productsThunk";
@@ -27,10 +26,6 @@ const CheckOutContent = () => {
     const price = item.product?.price || 0;
     return total + price * item.quantity;
   }, 0);
-
-  useEffect(() => {
-    if (userId) dispatch(fetchCart(userId));
-  }, [userId, dispatch]);
 
   useEffect(() => {
     if (user?.name && !nameUser) setNameUser(user.name);

@@ -10,7 +10,9 @@ import { useEffect } from "react";
 
 const AuthBootsTrap = () => {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
+  const userId = useAppSelector(
+    (state) => state.auth.user?.id || state.auth.user?._id || null
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -23,13 +25,12 @@ const AuthBootsTrap = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const userId = user?.id || user?._id;
     if (userId) {
       dispatch(fetchCart(userId));
     } else {
       dispatch(clearCart());
     }
-  }, [dispatch, user]);
+  }, [dispatch, userId]);
 
   return null;
 };

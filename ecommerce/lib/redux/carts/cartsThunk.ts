@@ -12,9 +12,17 @@ export const fetchCart = createAsyncThunk(
     try {
       const res = await getCartApi();
       return { userId, cart: res.data.items || [] };
-    } catch {
-      return rejectWithValue("Fetch cart failed");
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Fetch cart failed"
+      );
     }
+  },
+  {
+    condition: (_userId, { getState }) => {
+      const state: any = getState();
+      return !state.carts.loading;
+    },
   }
 );
 
