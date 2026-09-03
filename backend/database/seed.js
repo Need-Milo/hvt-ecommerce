@@ -97,14 +97,6 @@ async function main() {
         stockQuantity: product.stock,
         isFeatured: product.featured,
         categoryId: category.id,
-        images: {
-          create: [
-            {
-              imageUrl: `${backendUrl}/images/products/${product.image}`,
-              sortOrder: 0,
-            },
-          ],
-        },
         productSpecifications: {
           create: product.specifications.map(([name, value], sortOrder) => ({
             specificationName: name,
@@ -114,6 +106,27 @@ async function main() {
         },
       },
     });
+
+    const imageUrl = `${backendUrl}/images/products/${product.image}`;
+    const primaryImage = await prisma.productImage.findFirst({
+      where: { productId: saved.id },
+      orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+    });
+
+    if (primaryImage) {
+      await prisma.productImage.update({
+        where: { id: primaryImage.id },
+        data: { imageUrl, sortOrder: 0 },
+      });
+    } else {
+      await prisma.productImage.create({
+        data: {
+          productId: saved.id,
+          imageUrl,
+          sortOrder: 0,
+        },
+      });
+    }
 
     console.log(`Seeded product: ${saved.name}`);
   }
