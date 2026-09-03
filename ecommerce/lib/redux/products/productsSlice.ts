@@ -45,7 +45,10 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Fetch products failed";
+        state.error =
+          (action.payload as string) ||
+          action.error.message ||
+          "Không tải được sản phẩm";
       });
   },
 });

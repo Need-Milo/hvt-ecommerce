@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
 import { createOrderApi, fetchOrderApi } from "../../api/ordersApi"
+import { getApiErrorMessage } from "../../api/axiosClient"
 
 export const createOrder = createAsyncThunk(
   "orders/create",
@@ -14,7 +15,7 @@ export const createOrder = createAsyncThunk(
       }
       return res.data
     } catch (err: any) {
-      return rejectWithValue("Order failed")
+      return rejectWithValue(getApiErrorMessage(err, "Đặt hàng thất bại"))
     }
   }
 )
@@ -24,8 +25,8 @@ export const fetchOrders = createAsyncThunk(
     try{
       const res = await fetchOrderApi(userId)
       return res.data
-    } catch{
-      return rejectWithValue("Fetch orders failed")
+    } catch (err: any) {
+      return rejectWithValue(getApiErrorMessage(err, "Không tải được đơn hàng"))
     }
   }
 )

@@ -52,7 +52,7 @@ const RequireAuth = ({ children, requireCart = false }: Props) => {
   if (requireCart && cartError && !cartHydrated) {
     return (
       <div className="py-24 text-center text-red-500">
-        Không tải được giỏ hàng. Kiểm tra backend đang chạy rồi F5 lại.
+        {cartError}
       </div>
     );
   }

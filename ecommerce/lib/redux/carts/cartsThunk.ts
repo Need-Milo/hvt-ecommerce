@@ -5,6 +5,7 @@ import {
   removeCartApi,
   removeAllCartApi,
 } from "../../api/cartsAPi";
+import { getApiErrorMessage } from "../../api/axiosClient";
 
 export const fetchCart = createAsyncThunk(
   "carts/fetch",
@@ -14,7 +15,7 @@ export const fetchCart = createAsyncThunk(
       return { userId, cart: res.data.items || [] };
     } catch (err: any) {
       return rejectWithValue(
-        err.response?.data?.message || "Fetch cart failed"
+        getApiErrorMessage(err, "Không tải được giỏ hàng")
       );
     }
   },
@@ -40,7 +41,7 @@ export const addToCart = createAsyncThunk(
       return { userId, item: res.data };
     } catch (err: any) {
       return rejectWithValue(
-        err.response?.data?.message || "Add to cart failed"
+        getApiErrorMessage(err, "Không thêm được vào giỏ hàng")
       );
     }
   }
@@ -64,8 +65,8 @@ export const removeFromCart = createAsyncThunk(
         1;
       const res = await removeCartApi(itemId, current);
       return res.data;
-    } catch {
-      return rejectWithValue("Remove cart failed");
+    } catch (err: any) {
+      return rejectWithValue(getApiErrorMessage(err, "Không xóa được sản phẩm"));
     }
   }
 );
@@ -79,8 +80,8 @@ export const removeAllFromCart = createAsyncThunk(
     try {
       await removeAllCartApi(itemId);
       return { itemId };
-    } catch {
-      return rejectWithValue("Remove all failed");
+    } catch (err: any) {
+      return rejectWithValue(getApiErrorMessage(err, "Không xóa được sản phẩm"));
     }
   }
 );

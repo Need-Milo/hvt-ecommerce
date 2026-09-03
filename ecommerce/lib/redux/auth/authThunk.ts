@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { getMeApi, loginApi, registerApi } from "../../api/authApi";
+import { getApiErrorMessage } from "../../api/axiosClient";
 
 const setToken = (token: string) => {
   localStorage.setItem("token", token)
@@ -25,7 +26,7 @@ export const loginThunk = createAsyncThunk<
        token: res.data.token};
     } catch (err: any) {
       return rejectWithValue(
-        err.response?.data?.message || "Sai email hoặc mật khẩu"
+        getApiErrorMessage(err, "Sai email hoặc mật khẩu")
       );
     }
   }
@@ -51,9 +52,7 @@ export const registerThunk = createAsyncThunk<
         message: res.data.message,
       };
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Đăng ký thất bại"
-      );
+      return rejectWithValue(getApiErrorMessage(err, "Đăng ký thất bại"));
     }
   }
 );
