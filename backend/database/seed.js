@@ -1,6 +1,11 @@
 import bcrypt from "bcryptjs";
 import { disconnectDB, prisma } from "../config/db.js";
 
+const backendUrl = (process.env.BACKEND_URL || "http://localhost:5000").replace(
+  /\/$/,
+  "",
+);
+
 const sampleProducts = [
   {
     name: "iPhone 11",
@@ -95,7 +100,7 @@ async function main() {
         images: {
           create: [
             {
-              imageUrl: `http://localhost:5000/images/products/${product.image}`,
+              imageUrl: `${backendUrl}/images/products/${product.image}`,
               sortOrder: 0,
             },
           ],
