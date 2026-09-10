@@ -20,6 +20,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
   const { items, loading } = useAppSelector((state) => state.products);
+  const cartItems = useAppSelector((state) => state.carts.items);
 
   useEffect(() => {
     if (!items.length) {
@@ -28,6 +29,21 @@ export default function ProductDetail() {
   }, [dispatch, items.length]);
 
   const product = items.find((p) => p.id === id);
+  const cartQty =
+    cartItems.find((item) => item.productId === product?.id)?.quantity || 0;
+  const remainingStock = product
+    ? Math.max(0, product.stock - cartQty)
+    : 0;
+
+  useEffect(() => {
+    setQuantity(1);
+  }, [id]);
+
+  useEffect(() => {
+    if (remainingStock > 0) {
+      setQuantity((q) => Math.min(q, remainingStock));
+    }
+  }, [remainingStock]);
 
   if (loading || !product) {
     return (
@@ -38,11 +54,10 @@ export default function ProductDetail() {
   }
 
   const isStock = product.stock > 0;
-  const relatedProducts = items.filter(
-    (p) =>
-      (p.category === product.category || p.type === product.type) &&
-      p.id !== product.id
-  );
+  const canIncrease = quantity < remainingStock;
+  const relatedProducts = items
+    .filter((p) => p.type === product.type && p.id !== product.id)
+    .slice(0, 8);
   const specs = product.specifications || {
     "Danh mục": product.type,
     "Mã sản phẩm": String(product.id),
@@ -84,16 +99,25 @@ export default function ProductDetail() {
             />
             <span
               className={`px-4 py-1.5 text-sm font-semibold rounded-lg inline-block ${
-                isStock
+                remainingStock > 0
                   ? "bg-green-100 text-green-600"
                   : "bg-red-100 text-red-600"
               }`}
             >
-              {isStock ? "Còn hàng" : "Hết hàng"}
+              {remainingStock > 0
+                ? `Còn ${remainingStock} sản phẩm`
+                : isStock
+                  ? "Đã đạt số lượng tối đa trong giỏ"
+                  : "Hết hàng"}
             </span>
+            {isStock && (
+              <p className="text-sm text-gray-600">
+                Tồn kho: {product.stock} · Đã có trong giỏ: {cartQty}
+              </p>
+            )}
           </div>
 
-          {isStock && (
+          {remainingStock > 0 && (
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">Số lượng</span>
               <div className="flex items-center border rounded-md">
@@ -102,6 +126,7 @@ export default function ProductDetail() {
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9"
+                  disabled={quantity <= 1}
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 >
                   <Minus className="w-4 h-4" />
@@ -112,13 +137,19 @@ export default function ProductDetail() {
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9"
+                  disabled={!canIncrease}
                   onClick={() =>
-                    setQuantity((q) => Math.min(product.stock, q + 1))
+                    setQuantity((q) => Math.min(remainingStock, q + 1))
                   }
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
+              {!canIncrease && remainingStock > 0 && (
+                <span className="text-xs text-gray-500">
+                  Đã chọn hết số lượng còn lại
+                </span>
+              )}
             </div>
           )}
 
@@ -126,6 +157,7 @@ export default function ProductDetail() {
             product={product}
             quantity={quantity}
             forceButton
+            disabled={remainingStock <= 0}
             className="rounded-md h-11"
           />
 
@@ -178,7 +210,10 @@ export default function ProductDetail() {
                 </div>
                 <div className="mt-3 space-y-1">
                   <p className="font-semibold text-sm truncate">{item.name}</p>
-                  <p className="text-shop-dark-green font-bold">${item.price}</p>
+                  <PriceFormatter
+                    amount={item.price}
+                    className="text-shop-dark-green font-bold"
+                  />
                 </div>
               </Link>
             ))}

@@ -9,6 +9,7 @@ export const categoryController = {
           id: Number(c.id),
           name: c.name,
           slug: c.slug,
+          productCount: c._count?.products ?? 0,
         }))
       );
     } catch (error) {

@@ -17,6 +17,7 @@ interface Props {
   className?: string;
   quantity?: number;
   forceButton?: boolean;
+  disabled?: boolean;
 }
 
 export const AddToCartButton = ({
@@ -24,6 +25,7 @@ export const AddToCartButton = ({
   className,
   quantity = 1,
   forceButton = false,
+  disabled = false,
 }: Props) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -33,7 +35,8 @@ export const AddToCartButton = ({
   const cartItems = useAppSelector((state) => state.carts.items);
   const cartItem = cartItems.find((i) => i.productId === product.id);
   const userId = user?.id || user?._id;
-  const isOutOfStock = product.stock === 0;
+  const remainingStock = Math.max(0, product.stock - (cartItem?.quantity || 0));
+  const isOutOfStock = remainingStock <= 0 || disabled;
 
   const handleAddToCart = () => {
     if (!userId) {
@@ -43,7 +46,16 @@ export const AddToCartButton = ({
     }
 
     if (isOutOfStock) {
-      toast.error("Sản phẩm đã hết hàng");
+      toast.error(
+        remainingStock <= 0
+          ? "Đã đạt số lượng tối đa trong giỏ"
+          : "Sản phẩm đã hết hàng"
+      );
+      return;
+    }
+
+    if (quantity > remainingStock) {
+      toast.error(`Chỉ còn ${remainingStock} sản phẩm`);
       return;
     }
 
@@ -99,7 +111,11 @@ export const AddToCartButton = ({
         )}
       >
         <ShoppingBag className="mr-2 h-4 w-4" />
-        {isOutOfStock ? "Hết hàng" : "Thêm vào giỏ hàng"}
+        {isOutOfStock
+          ? remainingStock <= 0 && product.stock > 0
+            ? "Đã đạt số lượng tối đa"
+            : "Hết hàng"
+          : "Thêm vào giỏ hàng"}
       </Button>
     </div>
   );

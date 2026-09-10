@@ -1,62 +1,57 @@
 import bcrypt from "bcryptjs";
 import { disconnectDB, prisma } from "../config/db.js";
+import { productsData } from "../data/products.js";
 
 const backendUrl = (process.env.BACKEND_URL || "http://localhost:5000").replace(
   /\/$/,
   "",
 );
 
-const sampleProducts = [
-  {
-    name: "iPhone 11",
-    slug: "iphone-11",
-    category: "gadget",
-    price: 99,
-    stock: 12,
-    featured: true,
-    image: "product_1.png",
-    specifications: [
-      ["Màn hình", "6.1 inch"],
-      ["Camera", "Camera kép 12MP"],
-      ["Bảo hành", "12 tháng"],
-    ],
-  },
-  {
-    name: "Sony Headphone",
-    slug: "sony-headphone",
-    category: "appliances",
-    price: 400,
-    stock: 6,
-    featured: true,
-    image: "product_16.png",
-    specifications: [
-      ["Kết nối", "Bluetooth"],
-      ["Loại", "Over-ear"],
-      ["Bảo hành", "12 tháng"],
-    ],
-  },
-  {
-    name: "Refrigerator",
-    slug: "refrigerator",
-    category: "refrigerators",
-    price: 800,
-    stock: 8,
-    featured: false,
-    image: "product_18.png",
-    specifications: [
-      ["Loại", "Tủ lạnh"],
-      ["Dung tích", "300 lít"],
-      ["Bảo hành", "12 tháng"],
-    ],
-  },
+const CATEGORIES = [
+  ["Điện tử", "gadget"],
+  ["Gia dụng", "appliances"],
+  ["Tủ lạnh", "refrigerators"],
+  ["Khác", "others"],
 ];
 
+function toSlug(name, id, used) {
+  let slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  if (!slug) slug = `product-${id}`;
+  if (used.has(slug)) slug = `${slug}-${id}`;
+  used.add(slug);
+  return slug;
+}
+
+function resolveImageUrl(image) {
+  if (!image) return `${backendUrl}/images/products/product_1.png`;
+  if (/^https?:\/\//i.test(image)) return image;
+  return `${backendUrl}/images/products/${image}`;
+}
+
+const usedSlugs = new Set();
+const sampleProducts = productsData.map((product) => ({
+  name: product.name,
+  slug: toSlug(product.name, product.id, usedSlugs),
+  category: product.type || "others",
+  price: product.price,
+  stock: product.stock,
+  featured: product.status === "hot" || product.status === "new",
+  imageUrl: resolveImageUrl(product.image?.[0]),
+  description:
+    product.description ||
+    `${product.name} — sản phẩm chất lượng cho nhu cầu hằng ngày.`,
+  specifications: [
+    ["Danh mục", product.type || "others"],
+    ["Bảo hành", "12 tháng"],
+  ],
+}));
+
 async function main() {
-  for (const [name, slug] of [
-    ["Gadget", "gadget"],
-    ["Appliances", "appliances"],
-    ["Refrigerators", "refrigerators"],
-  ]) {
+  for (const [name, slug] of CATEGORIES) {
     await prisma.category.upsert({
       where: { slug },
       update: { name },
@@ -81,18 +76,25 @@ async function main() {
       where: { slug: product.category },
     });
 
+    if (!category) {
+      console.warn(`Skip ${product.name}: missing category ${product.category}`);
+      continue;
+    }
+
     const saved = await prisma.product.upsert({
       where: { slug: product.slug },
       update: {
         name: product.name,
+        description: product.description,
         price: product.price,
         stockQuantity: product.stock,
         isFeatured: product.featured,
+        categoryId: category.id,
       },
       create: {
         name: product.name,
         slug: product.slug,
-        description: `${product.name} — sản phẩm chất lượng cho nhu cầu hằng ngày.`,
+        description: product.description,
         price: product.price,
         stockQuantity: product.stock,
         isFeatured: product.featured,
@@ -107,7 +109,6 @@ async function main() {
       },
     });
 
-    const imageUrl = `${backendUrl}/images/products/${product.image}`;
     const primaryImage = await prisma.productImage.findFirst({
       where: { productId: saved.id },
       orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
@@ -116,13 +117,13 @@ async function main() {
     if (primaryImage) {
       await prisma.productImage.update({
         where: { id: primaryImage.id },
-        data: { imageUrl, sortOrder: 0 },
+        data: { imageUrl: product.imageUrl, sortOrder: 0 },
       });
     } else {
       await prisma.productImage.create({
         data: {
           productId: saved.id,
-          imageUrl,
+          imageUrl: product.imageUrl,
           sortOrder: 0,
         },
       });
@@ -131,7 +132,8 @@ async function main() {
     console.log(`Seeded product: ${saved.name}`);
   }
 
-  console.log("Prisma seed completed.");
+  const total = await prisma.product.count();
+  console.log(`Prisma seed completed. Total products: ${total}`);
 }
 
 main()

@@ -2,10 +2,11 @@
 
 import "../../globals.css";
 import { registerThunk } from "@/lib/redux/auth/authThunk";
+import { clearAuthError } from "@/lib/redux/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Logo } from "@/components/Logo";
 
@@ -19,6 +20,11 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+    setFormError("");
+  }, [dispatch]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
