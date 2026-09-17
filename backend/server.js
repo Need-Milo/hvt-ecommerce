@@ -5,7 +5,8 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { connectDB } from "./config/db.js";
+import { connectDB, prisma } from "./config/db.js";
+import { seedDatabase } from "./database/seed.js";
 import authRouter from "./routes/auth.js";
 import usersRoute from "./routes/users.js";
 import productsRoute from "./routes/products.js";
@@ -39,8 +40,24 @@ app.use("/api/categories", categoriesRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/orders", ordersRoute);
 
+async function ensureCatalog() {
+  const count = await prisma.product.count();
+  if (count >= 20) {
+    console.log(`Catalog ready: ${count} products`);
+    return;
+  }
+
+  console.log(`Catalog has ${count} products, seeding to 20+...`);
+  await seedDatabase();
+}
+
 async function start() {
   await connectDB();
+  try {
+    await ensureCatalog();
+  } catch (error) {
+    console.error("Auto-seed failed:", error);
+  }
   app.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
   });

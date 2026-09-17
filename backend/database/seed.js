@@ -1,3 +1,5 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import bcrypt from "bcryptjs";
 import { disconnectDB, prisma } from "../config/db.js";
 import { productsData } from "../data/products.js";
@@ -50,7 +52,7 @@ const sampleProducts = productsData.map((product) => ({
   ],
 }));
 
-async function main() {
+export async function seedDatabase() {
   for (const [name, slug] of CATEGORIES) {
     await prisma.category.upsert({
       where: { slug },
@@ -134,11 +136,18 @@ async function main() {
 
   const total = await prisma.product.count();
   console.log(`Prisma seed completed. Total products: ${total}`);
+  return total;
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(disconnectDB);
+const isCli =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isCli) {
+  seedDatabase()
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    })
+    .finally(disconnectDB);
+}
