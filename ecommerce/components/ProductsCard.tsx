@@ -75,11 +75,10 @@ const ProductsCard = ({ product }: Props) => {
         </div>
         <div className="flex items-center gap-2 tracking-wide mt-1">
           <p className="font-semibold">
-            {product?.stock > 0 ? "Còn hàng" : "Hết hàng"}
+            {product?.stock > 0
+              ? `Còn ${product.stock} sản phẩm`
+              : "Hết hàng"}
           </p>
-          {product?.stock > 0 && (
-            <p className="text-shop_light-text/80">{product.stock}</p>
-          )}
         </div>
         <div className="pb-2 pt-1">
           <PriceFormatter amount={product.price} className="font-semibold" />

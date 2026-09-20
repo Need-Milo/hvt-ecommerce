@@ -93,6 +93,11 @@ const CartContent = () => {
                         <PriceFormatter amount={item.product?.price || 0} />
                       </p>
                       <p className="text-sm text-gray-600">
+                        {item.product?.stock > 0
+                          ? `Còn ${item.product.stock} sản phẩm`
+                          : "Hết hàng"}
+                      </p>
+                      <p className="text-sm text-gray-600">
                         Thành tiền:{" "}
                         <PriceFormatter
                           amount={

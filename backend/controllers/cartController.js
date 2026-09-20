@@ -41,7 +41,7 @@ export const cartController = {
 
       if (nextQty > product.stockQuantity) {
         return res.status(400).json({
-          message: `Không đủ tồn kho cho ${product.name}`,
+          message: `Mỗi giỏ tối đa ${product.stockQuantity} sản phẩm cho ${product.name}`,
         });
       }
 
@@ -76,7 +76,7 @@ export const cartController = {
 
       if (quantity > item.product.stockQuantity) {
         return res.status(400).json({
-          message: `Không đủ tồn kho cho ${item.product.name}`,
+          message: `Mỗi giỏ tối đa ${item.product.stockQuantity} sản phẩm cho ${item.product.name}`,
         });
       }
 

@@ -59,8 +59,10 @@ const CheckOutContent = () => {
       await dispatch(fetchProducts());
       toast.success("Đặt hàng thành công");
       router.push("/order-success");
-    } catch {
-      toast.error("Đặt hàng thất bại");
+    } catch (error) {
+      toast.error(
+        typeof error === "string" ? error : "Đặt hàng thất bại"
+      );
     }
   };
 

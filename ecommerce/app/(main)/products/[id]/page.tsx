@@ -29,21 +29,19 @@ export default function ProductDetail() {
   }, [dispatch, items.length]);
 
   const product = items.find((p) => p.id === id);
+  const warehouseStock = product?.stock ?? 0;
   const cartQty =
     cartItems.find((item) => item.productId === product?.id)?.quantity || 0;
-  const remainingStock = product
-    ? Math.max(0, product.stock - cartQty)
-    : 0;
 
   useEffect(() => {
     setQuantity(1);
   }, [id]);
 
   useEffect(() => {
-    if (remainingStock > 0) {
-      setQuantity((q) => Math.min(q, remainingStock));
+    if (warehouseStock > 0) {
+      setQuantity((q) => Math.min(q, warehouseStock));
     }
-  }, [remainingStock]);
+  }, [warehouseStock]);
 
   if (loading || !product) {
     return (
@@ -53,8 +51,8 @@ export default function ProductDetail() {
     );
   }
 
-  const isStock = product.stock > 0;
-  const canIncrease = quantity < remainingStock;
+  const isStock = warehouseStock > 0;
+  const canIncrease = quantity < warehouseStock;
   const relatedProducts = items
     .filter((p) => p.type === product.type && p.id !== product.id)
     .slice(0, 8);
@@ -99,25 +97,22 @@ export default function ProductDetail() {
             />
             <span
               className={`px-4 py-1.5 text-sm font-semibold rounded-lg inline-block ${
-                remainingStock > 0
+                isStock
                   ? "bg-green-100 text-green-600"
                   : "bg-red-100 text-red-600"
               }`}
             >
-              {remainingStock > 0
-                ? `Còn ${remainingStock} sản phẩm`
-                : isStock
-                  ? "Đã đạt số lượng tối đa trong giỏ"
-                  : "Hết hàng"}
+              {isStock ? `Còn ${warehouseStock} sản phẩm` : "Hết hàng"}
             </span>
-            {isStock && (
+            {isStock && cartQty > 0 && (
               <p className="text-sm text-gray-600">
-                Tồn kho: {product.stock} · Đã có trong giỏ: {cartQty}
+                Đã có {cartQty} sản phẩm trong giỏ — tồn kho chỉ trừ khi thanh
+                toán
               </p>
             )}
           </div>
 
-          {remainingStock > 0 && (
+          {isStock && (
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">Số lượng</span>
               <div className="flex items-center border rounded-md">
@@ -139,15 +134,15 @@ export default function ProductDetail() {
                   className="h-9 w-9"
                   disabled={!canIncrease}
                   onClick={() =>
-                    setQuantity((q) => Math.min(remainingStock, q + 1))
+                    setQuantity((q) => Math.min(warehouseStock, q + 1))
                   }
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
-              {!canIncrease && remainingStock > 0 && (
+              {!canIncrease && (
                 <span className="text-xs text-gray-500">
-                  Đã chọn hết số lượng còn lại
+                  Đã chọn tối đa {warehouseStock} sản phẩm
                 </span>
               )}
             </div>
@@ -157,7 +152,6 @@ export default function ProductDetail() {
             product={product}
             quantity={quantity}
             forceButton
-            disabled={remainingStock <= 0}
             className="rounded-md h-11"
           />
 

@@ -47,7 +47,9 @@ export const OrderModel = {
         }
         if (product.stockQuantity < item.quantity) {
           throw Object.assign(
-            new Error(`Not enough stock for ${product.name}`),
+            new Error(
+              `Không đủ tồn kho cho ${product.name}. Chỉ còn ${product.stockQuantity} sản phẩm.`
+            ),
             { status: 400 }
           );
         }
@@ -83,10 +85,24 @@ export const OrderModel = {
       });
 
       for (const item of cartItems) {
-        await tx.product.update({
-          where: { id: BigInt(item.productId) },
+        const deducted = await tx.product.updateMany({
+          where: {
+            id: BigInt(item.productId),
+            stockQuantity: { gte: item.quantity },
+          },
           data: { stockQuantity: { decrement: item.quantity } },
         });
+        if (deducted.count === 0) {
+          const latest = await tx.product.findUnique({
+            where: { id: BigInt(item.productId) },
+          });
+          throw Object.assign(
+            new Error(
+              `Không đủ tồn kho cho ${latest?.name || "sản phẩm"}. Chỉ còn ${latest?.stockQuantity ?? 0} sản phẩm.`
+            ),
+            { status: 400 }
+          );
+        }
       }
 
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });

@@ -35,8 +35,11 @@ export const AddToCartButton = ({
   const cartItems = useAppSelector((state) => state.carts.items);
   const cartItem = cartItems.find((i) => i.productId === product.id);
   const userId = user?.id || user?._id;
-  const remainingStock = Math.max(0, product.stock - (cartItem?.quantity || 0));
-  const isOutOfStock = remainingStock <= 0 || disabled;
+  const warehouseStock = product.stock;
+  const cartQty = cartItem?.quantity || 0;
+  const nextQty = cartQty + quantity;
+  const isOutOfStock = warehouseStock <= 0 || disabled;
+  const exceedsStock = nextQty > warehouseStock;
 
   const handleAddToCart = () => {
     if (!userId) {
@@ -46,18 +49,21 @@ export const AddToCartButton = ({
     }
 
     if (isOutOfStock) {
+      toast.error("Sản phẩm đã hết hàng");
+      return;
+    }
+
+    if (exceedsStock) {
       toast.error(
-        remainingStock <= 0
-          ? "Đã đạt số lượng tối đa trong giỏ"
-          : "Sản phẩm đã hết hàng"
+        `Mỗi giỏ tối đa ${warehouseStock} sản phẩm. Tồn kho chỉ trừ khi thanh toán.`
       );
       return;
     }
 
-    if (quantity > remainingStock) {
-      toast.error(`Chỉ còn ${remainingStock} sản phẩm`);
-      return;
-    }
+    const shortName =
+      product.name.length > 15
+        ? product.name.substring(0, 15) + "..."
+        : product.name;
 
     dispatch(
       addToCart({
@@ -67,14 +73,14 @@ export const AddToCartButton = ({
           quantity,
         },
       })
-    );
-
-    const shortName =
-      product.name.length > 15
-        ? product.name.substring(0, 15) + "..."
-        : product.name;
-
-    toast.success(`${shortName} đã được thêm vào giỏ hàng`);
+    )
+      .unwrap()
+      .then(() => toast.success(`${shortName} đã được thêm vào giỏ hàng`))
+      .catch((error) =>
+        toast.error(
+          typeof error === "string" ? error : "Không thêm được vào giỏ hàng"
+        )
+      );
   };
 
   if (userId && cartItem && !forceButton) {
@@ -102,20 +108,20 @@ export const AddToCartButton = ({
     <div>
       <Button
         onClick={handleAddToCart}
-        disabled={isOutOfStock}
+        disabled={isOutOfStock || exceedsStock}
         className={cn(
           "w-full bg-shop-dark-green/80 text-shop-light-bg shadow-none border border-shop-dark-green/80 font-semibold tracking-wide hover:text-white hover:bg-shop-dark-green hover:border-shop-dark-green transition",
-          isOutOfStock &&
+          (isOutOfStock || exceedsStock) &&
             "opacity-50 cursor-not-allowed hover:bg-shop-dark-green/80",
           className
         )}
       >
         <ShoppingBag className="mr-2 h-4 w-4" />
         {isOutOfStock
-          ? remainingStock <= 0 && product.stock > 0
+          ? "Hết hàng"
+          : exceedsStock
             ? "Đã đạt số lượng tối đa"
-            : "Hết hàng"
-          : "Thêm vào giỏ hàng"}
+            : "Thêm vào giỏ hàng"}
       </Button>
     </div>
   );
